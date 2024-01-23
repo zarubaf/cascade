@@ -1,3 +1,5 @@
 objs/
+build/
 life
 .vscode
+*.o

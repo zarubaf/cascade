@@ -47,7 +47,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <descore/AssertParams.hpp>
 #include "Cascade.hpp"
-#include <vcsuser.h>
+#include <veriuser.h>
 #include <list>
 #include <descore/Iterators.hpp>
 

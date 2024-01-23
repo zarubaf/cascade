@@ -50,9 +50,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/time.h>
 #endif
 
-#ifdef _VERILOG
-#include <veriuser.h>
-#endif
 
 BEGIN_NAMESPACE_CASCADE
 
@@ -1172,7 +1169,7 @@ void ClockDomain::driveVerilogClocks ()
     {
         s_vpi_value value;
         value.format = vpiVectorVal;
-        s_vpi_vecval vecval = { m_numEdges & 1, 0 };
+        s_vpi_vecval vecval = { static_cast<PLI_UINT32>(m_numEdges & 1), 0 };
         value.value.vector = &vecval;
         vpi_put_value(m_verilogClocks[i], &value, NULL, vpiForceFlag);
     }
@@ -1530,11 +1527,7 @@ void ClockDomain::runSimulation (uint64 runUntil)
         assert_always(!params.Timeout || (Sim::simTime < uint64(params.Timeout) * 1000), "Simulation timed out");
         if (params.Finish && (Sim::simTime >= uint64(params.Finish) * 1000))
         {
-#ifdef _VERILOG
             if (Sim::isVerilogSimulation)
-                tf_dofinish();
-            else
-#endif
                 exit(0);
         }
 

@@ -6,20 +6,20 @@
 RM := /bin/rm -rf
 
 VCS     := $(VCS_HOME)/bin/vcs
-CXX		:= g++
+CXX		:= $(VCS_HOME)/amd64/clang/bin/clang++
 CFLAGS  := -ggdb3 -Wall -std=gnu++0x -I../../include
-VFLAGS  := -sverilog +vpi -P ../../verilog/vpi.tab -full64
+VFLAGS  := -sverilog -full64 +incdir+../../verilog
 
 LIBHPPFILES := $(wildcard ../../include/*/*.hpp)
 
-LIBDESCORE := ../../build/descore/libdescore.a
-LIBCASCADE := ../../build/cascade_verilog/libcascade_verilog.a
+LIBDESCORE := ../../build/libdescore.a
+LIBCASCADE := ../../build/libcascade_verilog.a
 
 simv: $(LIBDESCORE) $(LIBCASCADE) Adder.o tb_adder.sv CAdder.sv
-	$(VCS) $(VFLAGS) Adder.o CAdder.sv tb_adder.sv $(LIBCASCADE) $(LIBDESCORE) -lz -ltermcap
+	$(VCS) $(VFLAGS) Adder.o CAdder.sv tb_adder.sv $(LIBCASCADE) $(LIBDESCORE) -lz
 
 Adder.o: Adder.cpp $(LIBHPPFILES)
-	$(CXX) $(CFLAGS) -D_VERILOG -I$(VCS_HOME)/include -c -o Adder.o Adder.cpp
+	$(CXX) $(CFLAGS) -D_VERILOG -D_GLIBCXX_USE_CXX11_ABI=0 -I$(VCS_HOME)/include -c -o Adder.o Adder.cpp
 
 $(LIBDESCORE):
 	cd ../../src/descore; make

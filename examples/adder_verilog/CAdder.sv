@@ -47,4 +47,11 @@ module CAdder
     cmodule = createCModule("adder", s);
   end
 
+  always_ff @(posedge clk) begin
+    `PUSH_TO_C(i_a)
+    `PUSH_TO_C(i_b)
+    `CLOCK_CMODULE(clk)
+    `POP_FROM_C(o_sum)
+  end
+
 endmodule

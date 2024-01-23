@@ -730,11 +730,7 @@ void Sim::updateChecksum (const char *sz, int id)
 //
 ////////////////////////////////////////////////////////////////////////
 
-#ifdef _VERILOG
-#include <veriuser.h>
-#else
-#define tf_dofinish() (void) 0
-#endif
+#define tf_dofinish() exit(0)
 
 static descore::ErrorHook s_errorHook;
 static descore::FatalHook s_fatalHook;

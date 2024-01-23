@@ -66,12 +66,12 @@ namespace std
 //
 //////////////////////////////////////////////////////////////////////
 
-// By default, don't allow STL trees indexed by a pointer since this is a 
+// By default, don't allow STL trees indexed by a pointer since this is a
 // common source of non-determinism.
 namespace std
 {
     template <typename T> struct REFER_TO_DESCORE_STLTREE_HPP {};
-    template <typename T> struct less <T *> 
+    template <typename T> struct less <T *>
     {
         typedef typename REFER_TO_DESCORE_STLTREE_HPP<T *>::INVALID_STL_TREE_INDEXED_BY_POINTER _;
     };
@@ -92,18 +92,18 @@ namespace std
 BEGIN_NAMESPACE_DESCORE
 template <typename T> struct allow_ptr;
 template <typename T> struct allow_ptr <T *>
-{ 
+{
     bool operator() (const T *lhs, const T *rhs) const
-    { 
+    {
         return lhs < rhs;
-    } 
+    }
 };
 template <typename T> struct allow_ptr <const T *>
-{ 
+{
     bool operator() (const T *lhs, const T *rhs) const
-    { 
+    {
         return lhs < rhs;
-    } 
+    }
 };
 END_NAMESPACE_DESCORE
 
@@ -138,7 +138,7 @@ DESCORE_ALLOW_STL_TREE_TYPE(const boost::system::error_category *);
 //////////////////////////////////////////////////////////////////////
 
 // The default comparison operators for sets and maps use operator<
-// to compare individual elements instead of std::less<T>.  This 
+// to compare individual elements instead of std::less<T>.  This
 // produces surprising and inconsistent results, and defeats the intention
 // of std::less<> specializations.  So, don't allow this operators.
 // Use descore::lt, descore::gt, descore::lte, descore::gte instead.
@@ -557,10 +557,10 @@ END_NAMESPACE_DESCORE
 namespace std
 {
     template <typename K, typename P, typename A>
-    struct less<std::set<K, P, A> > : public descore::tree_less<std::set<K, P, A> > {}; 
+    struct less<std::set<K, P, A> > : public descore::tree_less<std::set<K, P, A> > {};
 
     template <typename K, typename P, typename A>
-    struct less<std::multiset<K, P, A> > : public descore::tree_less<std::multiset<K, P, A> > {}; 
+    struct less<std::multiset<K, P, A> > : public descore::tree_less<std::multiset<K, P, A> > {};
 
     template <typename K, typename T, typename P, typename A>
     struct less<std::map<K, T, P, A> > : public descore::tree_less<std::map<K, T, P, A> > {};
@@ -579,4 +579,4 @@ namespace std
 }
 
 #endif // #ifndef descore_stltree_hpp
- 
+

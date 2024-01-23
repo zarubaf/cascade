@@ -47,7 +47,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if defined (_MSC_VER)
 #include <windows.h>
 #else
-#include <termcap.h>
+// #include <termcap.h>
 #endif
 
 BEGIN_NAMESPACE_DESCORE
@@ -56,16 +56,16 @@ int getConsoleWidth ()
 {
     int width = 80;
 #ifdef _MSC_VER
-    HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE); 
-    CONSOLE_SCREEN_BUFFER_INFO csbiInfo; 
-    if (GetConsoleScreenBufferInfo(hStdout, &csbiInfo)) 
+    HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
+    if (GetConsoleScreenBufferInfo(hStdout, &csbiInfo))
         width = csbiInfo.dwSize.X;
 #else
     char *termtype = getenv("TERM");
     if (!termtype)
         termtype = (char*)"dumb";
-    if (tgetent(NULL, termtype))
-        width = tgetnum("co");
+    // if (tgetent(NULL, termtype))
+    //     width = tgetnum("co");
 #endif
     if (width <= 0)
         width = 80;
