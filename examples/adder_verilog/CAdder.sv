@@ -30,6 +30,8 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+`include "dpi.svh"
+
 module CAdder
 (
  input  logic clk,
@@ -38,6 +40,11 @@ module CAdder
  output logic [16:0] o_sum
  );
 
-initial $create_cmodule("adder");
+  chandle cmodule;
+  initial begin
+    string s;
+    $sformat(s, "%m");
+    cmodule = createCModule("adder", s);
+  end
 
 endmodule

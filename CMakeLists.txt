@@ -23,10 +23,21 @@ target_include_directories(cascade
     include/
     include/cascade
 )
+add_definitions(-D_VERILOG)
+
 target_link_libraries(cascade descore)
 
+
+
 file(GLOB LIFE_SRCS examples/life/*.cpp)
+file(GLOB ADDER_SRCS examples/adder_verilog/*.cpp)
+
 add_executable(life
     ${LIFE_SRCS}
 )
 target_link_libraries(life cascade -lz -ltermcap -lpthread)
+
+add_library(adder
+${ADDER_SRCS}
+)
+target_link_libraries(adder cascade -lz -ltermcap -lpthread)

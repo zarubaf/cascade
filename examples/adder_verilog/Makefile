@@ -10,13 +10,13 @@ CXX		:= g++
 CFLAGS  := -ggdb3 -Wall -std=gnu++0x -I../../include
 VFLAGS  := -sverilog +vpi -P ../../verilog/vpi.tab -full64
 
-LIBHPPFILES := $(wildcard ../../include/*/*.hpp) 
+LIBHPPFILES := $(wildcard ../../include/*/*.hpp)
 
-LIBDESCORE := ../../objs/descore/libdescore.a
-LIBCASCADE := ../../objs/cascade_verilog/libcascade_verilog.a
+LIBDESCORE := ../../build/descore/libdescore.a
+LIBCASCADE := ../../build/cascade_verilog/libcascade_verilog.a
 
-simv: $(LIBDESCORE) $(LIBCASCADE) Adder.o tb_adder.sv CAdder.sv 
-	$(VCS) $(VFLAGS) Adder.o CAdder.sv tb_adder.sv $(LIBCASCADE) $(LIBDESCORE) -lz -ltermcap 
+simv: $(LIBDESCORE) $(LIBCASCADE) Adder.o tb_adder.sv CAdder.sv
+	$(VCS) $(VFLAGS) Adder.o CAdder.sv tb_adder.sv $(LIBCASCADE) $(LIBDESCORE) -lz -ltermcap
 
 Adder.o: Adder.cpp $(LIBHPPFILES)
 	$(CXX) $(CFLAGS) -D_VERILOG -I$(VCS_HOME)/include -c -o Adder.o Adder.cpp
@@ -26,6 +26,9 @@ $(LIBDESCORE):
 
 $(LIBCASCADE):
 	cd ../../src/cascade; make verilog
+
+verilate:
+	verilator -I../../verilog --binary tb_adder.sv CAdder.sv ../../../build/libadder.a ../../../build/libcascade.a ../../../build/libdescore.a
 
 clean:
 	$(RM) simv

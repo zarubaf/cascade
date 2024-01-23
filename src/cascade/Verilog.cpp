@@ -168,7 +168,7 @@ static bool _namesMatch (const char *cname, const char *vname)
     if (!((*vname == 'i' || *vname == 'o') && vname[1] == '_'))
         return false;
     bool parsed_cdir = false; // True once we've parsed in_/out_ from cname
-    bool check_cdir = true;   // True if we should check for in_/out_ (at start and after '.') 
+    bool check_cdir = true;   // True if we should check for in_/out_ (at start and after '.')
 
     // Match the names
     const char *cch = cname;
@@ -241,9 +241,9 @@ static const char *strDirection (int direction)
 //----------------------------------
 // Constructor
 //----------------------------------
-VerilogPortBinding::VerilogPortBinding (vpiHandle port, 
-                                        vpiHandle module, 
-                                        const InterfaceEntry *entry, 
+VerilogPortBinding::VerilogPortBinding (vpiHandle port,
+                                        vpiHandle module,
+                                        const InterfaceEntry *entry,
                                         void *address,
                                         const strbuff &name,
                                         bool reverseDirection)
@@ -264,11 +264,11 @@ VerilogPortBinding::VerilogPortBinding (vpiHandle port,
 
         // Verify the direction
         int portDirection = vpi_get(vpiDirection, port);
-        int expectedDirection = 
+        int expectedDirection =
             ((m_direction == PORT_INPUT) || (m_direction == PORT_RESET) || (m_direction == PORT_CLOCK)) ? vpiInput :
             (m_direction == PORT_OUTPUT) ? vpiOutput :
             vpiInout;
-        assert_always(portDirection == expectedDirection, 
+        assert_always(portDirection == expectedDirection,
                       "Mismatched port direction\n"
                       "    Verilog:  dir = %-6s  port = '%s'\n"
                       "    Cascade:  dir = %-6s  port = '%s'",
@@ -302,10 +302,10 @@ VerilogPortBinding::VerilogPortBinding (vpiHandle port,
             assert_always(m_port->wrapper->type != PORT_PULSE, "Cannot bind Verilog port to pulse port %s", *name);
         }
 
-        // Resolve combinational connections so that we're looking at the right port 
+        // Resolve combinational connections so that we're looking at the right port
         // when we inspect the flags and possibly set the type to PORT_LATCH.
         m_port = m_port->wrapper->getTerminalWrapper()->port;
-        
+
         // If this port is written from Verilog, then set the type to latch so that it doesn't
         // have any valid flags in debug builds.  Also set the 'verilog_wr' wrapper flag.
         if (m_direction == PORT_INPUT || m_direction == PORT_INOUT)
@@ -528,10 +528,10 @@ static void validateNames (PortSet::PortSetType portSet, InterfaceDescriptor *de
 //----------------------------------
 // Construct a new verilog module
 //----------------------------------
-VerilogModule::VerilogModule (string name, 
-                              string verilogName, 
-                              VerilogModuleInterface type, 
-                              Component *component, 
+VerilogModule::VerilogModule (string name,
+                              string verilogName,
+                              VerilogModuleInterface type,
+                              Component *component,
                               IMPL_CTOR)
 : m_cmoduleName(string("[CModule]") + verilogName),
   m_componentName((type == VPI_SIMULATION_MODULE) ? NULL : *m_cmoduleName),
@@ -608,7 +608,7 @@ VerilogModule::VerilogModule (string name,
                             match = itEnd;
                             break;
                         }
-                    } 
+                    }
                 }
                 if (match != itEnd)
                 {
@@ -618,13 +618,13 @@ VerilogModule::VerilogModule (string name,
                 else
                     vports.push_back(vport);
             }
-            
+
             // Bind the remaining ports in order
             Iterator<std::list<CModulePort> > itc(cports);
             Iterator<std::list<vpiHandle> > itv(vports);
             for ( ; itc && itv ; itc++, itv++)
                 bindPort(*itv, module, *itc);
-            
+
             // Make sure we bound all the ports
             assert_always(!itv, "Unmatched Verilog port '%s'", vpi_get_str(vpiName, *itv));
         }
@@ -635,7 +635,7 @@ VerilogModule::VerilogModule (string name,
         for (const CModulePort &cport : cports)
         {
             // Create the port binding
-            *lastBinding = new VerilogPortBinding(NULL, NULL, 
+            *lastBinding = new VerilogPortBinding(NULL, NULL,
                                                   cport.entry, cport.address, cport.name);
             lastBinding = &((*lastBinding)->m_next);
 
@@ -643,12 +643,12 @@ VerilogModule::VerilogModule (string name,
             if (cport.entry->direction == PORT_CLOCK)
             {
                 // Create the clock binding
-                VerilogClockBinding *clock = new VerilogClockBinding; 
+                VerilogClockBinding *clock = new VerilogClockBinding;
                 clock->name = cport.entry->name;
                 clock->clock = (Clock *) cport.address;
                 clock->next = m_clockBindings;
                 m_clockBindings = clock;
-                
+
                 // Set the clock to manual update
                 clock->clock->setManual();
             }
@@ -670,28 +670,28 @@ void VerilogModule::bindPort (vpiHandle port, vpiHandle module, const CModulePor
 {
     // Create the port binding
     bool reverseDirection = (m_impl == VERILOG_MODULE);
-    VerilogPortBinding *binding = new VerilogPortBinding(port, module, cport.entry, cport.address, 
+    VerilogPortBinding *binding = new VerilogPortBinding(port, module, cport.entry, cport.address,
                                                          cport.name, reverseDirection);
     binding->m_next = m_portBindings;
     m_portBindings = binding;
-    
+
     // If it's a clock, create the clock callback
     if (cport.entry->direction == PORT_CLOCK)
     {
         // Create the clock binding
-        VerilogClockBinding *clock = new VerilogClockBinding; 
+        VerilogClockBinding *clock = new VerilogClockBinding;
         clock->cmodule = this;
         clock->clock = (Clock *) cport.address;
         clock->port = vpi_handle_by_name(vpi_get_str(vpiName, port), module);
         clock->next = m_clockBindings;
         m_clockBindings = clock;
-        
+
         // If this is a Cascade component then set the clock to manual and
         // register a callback
         if (m_impl == CASCADE_MODULE)
         {
             clock->clock->setManual();
-        
+
             // Register the callback
             port = vpi_handle_by_name(vpi_get_str(vpiName, port), module);
             s_vpi_time  time_s  = { vpiSimTime };
@@ -820,7 +820,7 @@ void VerilogModule::vpiTick (Clock *clock)
     {
         for (VerilogPortBinding *port = m_portBindings ; port ; port = port->m_next)
         {
-            if (port->m_direction == PORT_INPUT || port->m_direction == PORT_INOUT || 
+            if (port->m_direction == PORT_INPUT || port->m_direction == PORT_INOUT ||
                 (port->m_direction == PORT_RESET && m_impl == CASCADE_MODULE))
             {
                 port->updateIn();
@@ -831,7 +831,7 @@ void VerilogModule::vpiTick (Clock *clock)
     // Rising clock edge
     if (clock && (m_impl == CASCADE_MODULE))
         clkTick(clock);
-    
+
     // Schedule the update out for the next delta cycle if we haven't already
     if (m_updateIn)
     {
@@ -880,7 +880,7 @@ void VerilogModule::init ()
 {
     // Initialize the C++ side with zero (this is necessary because
     // if there are unused bits then they will have garbage in them, and if the port
-    // is, e.g., a u2, then it can have an invalid value).  
+    // is, e.g., a u2, then it can have an invalid value).
     for (VerilogPortBinding *port = m_portBindings ; port ; port = port->m_next)
     {
         if (port->m_direction == PORT_INPUT || port->m_direction == PORT_INOUT)
@@ -889,7 +889,7 @@ void VerilogModule::init ()
         // Do an initial copy of values between Verilog and C++ for VPI modules
         if (m_type != DPI_MODULE)
         {
-            if (port->m_direction == PORT_INPUT || port->m_direction == PORT_INOUT || 
+            if (port->m_direction == PORT_INPUT || port->m_direction == PORT_INOUT ||
                 (port->m_direction == PORT_RESET && m_impl == CASCADE_MODULE))
             {
                 port->updateIn();
@@ -986,7 +986,7 @@ void VerilogModuleFactory::registerModule (const char *name, const char *verilog
 void VerilogModuleFactory::registerComponent (const char *name, Component *component)
 {
     std::map<string, string>::const_iterator it = s_verilogModules.find(name);
-    assert_always(it != s_verilogModules.end(), 
+    assert_always(it != s_verilogModules.end(),
                   "Verilog module '%s' has not been registered", name);
     new VerilogModule(name, *(it->second), Cascade::VPI_MODULE, component);
 
@@ -1059,16 +1059,16 @@ static PLI_INT32 vpi_run_callback (s_cb_data *)
     // Copy in values (also schedules the copy out)
     for (VerilogModule *m = VerilogModule::s_first ; m ; m = m->m_next)
         m->vpiTick(NULL);
-    
+
     Sim::run();
     uint64 nextTick = Sim::simTime;
-    
+
     // Translate nextTick to the Verilog time precision
     int precision = tf_gettimeprecision();
     assert_always(precision <= -12, "Cascade requires a time precision of 1ps or finer");
     for ( ; precision < -12 ; precision++)
         nextTick *= 10;
-    
+
     // Schedule the next callback
     s_cb_data cb = { cbAtStartOfSimTime, &vpi_run_callback };
     struct t_vpi_time time;
@@ -1254,7 +1254,7 @@ static void vpi_begin ()
 static vpiHandle vpi_getHandle (const char *name)
 {
     vpiHandle arg = vpi_scan(args);
-    assert_always(arg, "Too few arguments supplied to %s: missing %s", 
+    assert_always(arg, "Too few arguments supplied to %s: missing %s",
                   vpi_get_str(vpiName, tfcall), name);
     return arg;
 }

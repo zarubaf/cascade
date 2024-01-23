@@ -268,7 +268,7 @@ void Sim::init ()
     // Sort update functions
     UpdateFunctions::sort();
 
-    // Initialize components (before ClockDomain::initialize() because initComponent() 
+    // Initialize components (before ClockDomain::initialize() because initComponent()
     // might create the default clock domain).
     doComponents(initComponent, true);
 
@@ -372,7 +372,7 @@ void Sim::resetInternal (Component *component, int level, bool resetSiblings)
     // which fifos have been reset in order to determine which pending fifo events
     // should be dropped.
     int numResets = 0;
-    do 
+    do
     {
         if (++numResets > params.MaxResetIterations)
             die("reset() failed to converge (try increasing MaxResetIterations)");
@@ -384,7 +384,7 @@ void Sim::resetInternal (Component *component, int level, bool resetSiblings)
         g_iterateReset = false;
         for (Component *list = component ; list ; list = resetSiblings ? list->nextComponent : NULL)
             resetComponent(list, level);
-    } 
+    }
     while (g_iterateReset);
 
     // Now reset clock domain state
@@ -773,7 +773,7 @@ static void simFatalHook (const descore::runtime_error &error)
 /////////////////////////////////////////////////////////////////
 void Sim::logHeader ()
 {
-    static const char *logHeader = 
+    static const char *logHeader =
         "#         __________________________________________\n"
         "#  C     /                                          \n"
         "#   A   /   Version %s - %s \n"

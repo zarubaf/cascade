@@ -48,7 +48,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifdef _VERILOG
 
-#include <vcs_vpi_user.h>
+#include <vpi_user.h>
 #include <svdpi.h>
 
 BEGIN_NAMESPACE_CASCADE
@@ -73,7 +73,7 @@ class VerilogPortBinding
     friend class VerilogModule;
 public:
     // port and module are NULL for DPI port bindings
-    VerilogPortBinding (vpiHandle port, vpiHandle module, const InterfaceEntry *entry, 
+    VerilogPortBinding (vpiHandle port, vpiHandle module, const InterfaceEntry *entry,
                         void *address, const strbuff &name, bool reverseDirection = false);
 
     // Late initialization for DPI (validate/set the name and size)
@@ -141,8 +141,8 @@ struct VerilogClockBinding
 /////////////////////////////////////////////////////////////////
 
 enum VerilogModuleInterface
-{ 
-    VPI_MODULE, 
+{
+    VPI_MODULE,
     DPI_MODULE,
     VPI_SIMULATION_MODULE // created by $run_simulation
 };
@@ -157,7 +157,7 @@ class VerilogModule : public Component
 {
     DECLARE_COMPONENT(VerilogModule);
 public:
-    VerilogModule (string name, string verilogName, VerilogModuleInterface type, 
+    VerilogModule (string name, string verilogName, VerilogModuleInterface type,
                    Component *component = NULL, COMPONENT_CTOR);
     ~VerilogModule ();
 
@@ -172,7 +172,7 @@ public:
     // Clock tick
     void clkTick (Clock *clock);
 
-    // Initialize the input ports and pulse output ports with zero 
+    // Initialize the input ports and pulse output ports with zero
     static void initModules ();
     void init ();
 
@@ -315,7 +315,7 @@ public:
 //
 // CModule declaration
 //
-// The first argument is the name of the CModule (without quotes), which 
+// The first argument is the name of the CModule (without quotes), which
 // must match exactly the name supplied by Verilog.  The second argument
 // is a code snippet that creates the C++ implementation.  In the common
 // simple case, the code snippet is of the form 'new T()', e.g.

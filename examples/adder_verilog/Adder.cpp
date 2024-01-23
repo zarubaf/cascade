@@ -32,21 +32,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cascade/Cascade.hpp>
 
-class Adder : public Component
-{
-    DECLARE_COMPONENT(Adder);
-public:
-    Adder (COMPONENT_CTOR) {}
+class Adder : public Component {
+  DECLARE_COMPONENT(Adder);
 
-    Clock(clk);
-    Input(u16,  in_a);
-    Input(u16,  in_b);
-    Output(u17, out_sum);
+ public:
+  Adder(COMPONENT_CTOR) {}
 
-    void update ()
-    {
-        out_sum = in_a + in_b;
-    }
+  Clock(clk);
+  Input(u16, in_a);
+  Input(u16, in_b);
+  Output(u17, out_sum);
+
+  void update() { out_sum = in_a + in_b; }
 };
 
 DECLARE_CMODULE(adder, new Adder);

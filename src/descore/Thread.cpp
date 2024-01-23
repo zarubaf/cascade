@@ -67,7 +67,7 @@ __thread bool t_creatingThreadLocalData = false;
 __thread bool t_destroyingThreadLocalData = false;
 static __thread Thread *t_self = NULL;
 
-Thread *Thread::self ()
+Thread *Thread::self()
 {
     return t_self ? t_self : &g_mainThread;
 }
@@ -77,19 +77,19 @@ Thread *Thread::self ()
 // Global mutexes
 //
 ////////////////////////////////////////////////////////////////////////////////
-Mutex &smartPtrMutex ()
+Mutex &smartPtrMutex()
 {
     static Mutex mutex;
     return mutex;
 }
 
-Mutex &errorMutex ()
+Mutex &errorMutex()
 {
     static Mutex mutex;
     return mutex;
 }
 
-static void initGlobalMutexes ()
+static void initGlobalMutexes()
 {
     static bool initialized = false;
     if (!initialized)
@@ -105,22 +105,22 @@ static void initGlobalMutexes ()
 // Error helper
 //
 ////////////////////////////////////////////////////////////////////////////////
-static string getError (int error)
+static string getError(int error)
 {
 #ifdef _MSC_VER
     char msg[256] = {0};
     error = error;
 
     ::FormatMessage(
-        FORMAT_MESSAGE_ALLOCATE_BUFFER | 
-        FORMAT_MESSAGE_FROM_SYSTEM |
-        FORMAT_MESSAGE_IGNORE_INSERTS,
+        FORMAT_MESSAGE_ALLOCATE_BUFFER |
+            FORMAT_MESSAGE_FROM_SYSTEM |
+            FORMAT_MESSAGE_IGNORE_INSERTS,
         NULL,
         ::GetLastError(),
         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        (LPTSTR) &msg,
-        256, 
-        NULL );
+        (LPTSTR)&msg,
+        256,
+        NULL);
 
     string ret(msg);
     return ret;
@@ -134,13 +134,13 @@ static string getError (int error)
 // Thread()
 //
 ////////////////////////////////////////////////////////////////////////////////
-Thread::Thread () 
-  : m_stackSize(0), 
-    m_handle(NULL), 
-    m_entryPoint(NULL), 
-    m_running(false), 
-    m_error(NULL),
-    m_waitOnError(false)
+Thread::Thread()
+    : m_stackSize(0),
+      m_handle(NULL),
+      m_entryPoint(NULL),
+      m_running(false),
+      m_error(NULL),
+      m_waitOnError(false)
 {
     initGlobalMutexes();
 }
@@ -150,7 +150,7 @@ Thread::Thread ()
 // setStackSize()
 //
 ////////////////////////////////////////////////////////////////////////////////
-void Thread::setStackSize (int sizeInBytes)
+void Thread::setStackSize(int sizeInBytes)
 {
     assert(sizeInBytes > 0);
     assert(!m_running, "Cannot set stack size: thread has already been started");
@@ -162,7 +162,7 @@ void Thread::setStackSize (int sizeInBytes)
 // waitOnError()
 //
 ////////////////////////////////////////////////////////////////////////////////
-void Thread::waitOnError ()
+void Thread::waitOnError()
 {
     m_waitOnError = true;
 }
@@ -172,7 +172,7 @@ void Thread::waitOnError ()
 // ~Thread()
 //
 ////////////////////////////////////////////////////////////////////////////////
-Thread::~Thread ()
+Thread::~Thread()
 {
     if (m_handle && (!g_error || m_waitOnError))
         wait();
@@ -186,28 +186,29 @@ Thread::~Thread ()
 struct CleanupError
 {
     DECLARE_NOCOPY(CleanupError);
+
 public:
-    CleanupError (runtime_error * volatile &_err) : err(_err) {}
-    ~CleanupError ()
+    CleanupError(runtime_error *volatile &_err) : err(_err) {}
+    ~CleanupError()
     {
         err->handled();
         delete err;
         err = NULL;
     }
 
-    runtime_error * volatile &err;
+    runtime_error *volatile &err;
 };
 
-void Thread::wait ()
+void Thread::wait()
 {
     assert(m_handle, "Thread has not been started");
     if (m_running)
     {
-    #ifdef _MSC_VER
+#ifdef _MSC_VER
         int error = (::WaitForSingleObject(m_handle, INFINITE) == DWORD(-1));
-    #else
-        int error = pthread_join((pthread_t) (intptr_t) m_handle, NULL);
-    #endif
+#else
+        int error = pthread_join((pthread_t)(intptr_t)m_handle, NULL);
+#endif
         assert(!m_running, "Failed to wait for thread: %s", *getError(error));
     }
 #ifdef _MSC_VER
@@ -229,7 +230,7 @@ void Thread::wait ()
 // running()
 //
 ////////////////////////////////////////////////////////////////////////////////
-bool Thread::running () const
+bool Thread::running() const
 {
     return m_running;
 }
@@ -239,7 +240,8 @@ bool Thread::running () const
 // check_and_rethrow_errors()
 //
 ////////////////////////////////////////////////////////////////////////////////
-void Thread::check_and_rethrow_errors () {
+void Thread::check_and_rethrow_errors()
+{
     if (m_error)
     {
         CleanupError cleanup(m_error);
@@ -260,15 +262,15 @@ typedef void *thread_ret_t;
 #endif
 
 // In Log.cpp
-void createLogBuffers ();
+void createLogBuffers();
 
-static thread_ret_t beginThread (void *thread)
+static thread_ret_t beginThread(void *thread)
 {
-    ((Thread *) thread)->runThread();
+    ((Thread *)thread)->runThread();
     return 0;
 }
 
-void Thread::startThread (IThreadFunction *entryPoint)
+void Thread::startThread(IThreadFunction *entryPoint)
 {
     // Make sure the main thread creates the log buffers
     createLogBuffers();
@@ -284,7 +286,7 @@ void Thread::startThread (IThreadFunction *entryPoint)
     m_tracer = t_tracer;
 
 #ifdef _MSC_VER
-    m_handle = ::CreateThread(NULL, m_stackSize, (LPTHREAD_START_ROUTINE) &beginThread, this, 0, NULL);
+    m_handle = ::CreateThread(NULL, m_stackSize, (LPTHREAD_START_ROUTINE)&beginThread, this, 0, NULL);
     int error = (m_handle == NULL);
 #else
     pthread_t id;
@@ -297,7 +299,7 @@ void Thread::startThread (IThreadFunction *entryPoint)
         assert(!error, "Failed to set stack size: %s", *getError(error));
     }
     error = pthread_create(&id, &attr, &beginThread, this);
-    m_handle = (void *) (intptr_t) id;
+    m_handle = (void *)(intptr_t)id;
 #endif
 
     assert(!error, "Failed to create thread: %s", *getError(error));
@@ -305,33 +307,35 @@ void Thread::startThread (IThreadFunction *entryPoint)
 
 struct ThreadLocalObjects
 {
-    ThreadLocalObjects ()
+    ThreadLocalObjects()
     {
         t_creatingThreadLocalData = true;
         t_threadLocalTypesToDestruct = new std::vector<IThreadLocalDataType *>;
 
-        // Make sure the log buffers are created first so that if other constructors 
+        // Make sure the log buffers are created first so that if other constructors
         // fail we can log the error.
         createLogBuffers();
-        for (IThreadLocalDataType *t = g_threadLocalDataTypes ; t ; t = t->next)
+        for (IThreadLocalDataType *t = g_threadLocalDataTypes; t; t = t->next)
             t->createObjects();
         t_creatingThreadLocalData = false;
     }
     ~ThreadLocalObjects()
     {
         t_destroyingThreadLocalData = true;
-        for (int i = t_threadLocalTypesToDestruct->size() - 1 ; i >= 0 ; i--)
+        for (int i = t_threadLocalTypesToDestruct->size() - 1; i >= 0; i--)
             (*t_threadLocalTypesToDestruct)[i]->deleteObjects();
         delete t_threadLocalTypesToDestruct;
     }
 };
 
-struct thread_exit {};
+struct thread_exit
+{
+};
 
-void Thread::runThread ()
+void Thread::runThread()
 {
     // The outer try block is specifically to catch errors in the construction
-    // or destruction of thread-local objects.  Because logging depends on 
+    // or destruction of thread-local objects.  Because logging depends on
     // thread-local objects, we can't use logerr() for these errors.
     runtime_error *threadLocalObjectError = NULL;
     const char *state = "construction";
@@ -370,7 +374,7 @@ void Thread::runThread ()
         {
             const char *what = m_error->what();
             logerr("%s", what);
-            if (what[strlen(what)-1] != '\n')
+            if (what[strlen(what) - 1] != '\n')
                 logerr("\n");
         }
     }
@@ -408,7 +412,7 @@ void Thread::runThread ()
 // sleep()
 //
 ////////////////////////////////////////////////////////////////////////////////
-void Thread::sleep (int milliseconds)
+void Thread::sleep(int milliseconds)
 {
 #ifdef _MSC_VER
     ::Sleep(milliseconds);
@@ -425,14 +429,14 @@ void Thread::sleep (int milliseconds)
 // yield()
 //
 ////////////////////////////////////////////////////////////////////////////////
-void Thread::yield ()
+void Thread::yield()
 {
 #ifdef _MSC_VER
-    ::Sleep(0); //FIXME: Is this right?
+    ::Sleep(0); // FIXME: Is this right?
 #else
-    #ifndef _GC
+#ifndef _GC
     sched_yield();
-    #endif
+#endif
 #endif
 }
 
@@ -441,7 +445,7 @@ void Thread::yield ()
 // exit()
 //
 ////////////////////////////////////////////////////////////////////////////////
-void Thread::exit ()
+void Thread::exit()
 {
     assert_always(!isMainThread(), "descore::Thread::exit() cannot be called from the main thread");
     throw thread_exit();
@@ -452,7 +456,7 @@ void Thread::exit ()
 // isMainThread()
 //
 ////////////////////////////////////////////////////////////////////////////////
-bool Thread::isMainThread ()
+bool Thread::isMainThread()
 {
     return !t_self || (t_self == &g_mainThread);
 }
@@ -464,37 +468,27 @@ bool Thread::isMainThread ()
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifndef _MSC_VER
-#ifdef __x86_64__
-static int interlocked_add (volatile int *value, int amount)
+int32_t interlocked_add(volatile int32_t *value, int32_t amount)
 {
-    int ret;
-    
-    __asm__ __volatile__
-        (
-            "lock xadd %1, %0":
-            "+m"(*value), "=r"(ret): // outputs
-            "1"(amount):             // inputs
-            "memory", "cc"           // clobbers
-            );
-    
-    return ret + amount;
+    __atomic_add_fetch(value, amount,__ATOMIC_SEQ_CST);
+    return *value;
+
 }
 #endif
-#endif
 
-int atomicIncrement (volatile int &value)
+int atomicIncrement(volatile int &value)
 {
 #ifdef _MSC_VER
-    return InterlockedIncrement((volatile LONG *) &value);
+    return InterlockedIncrement((volatile LONG *)&value);
 #else
     return interlocked_add(&value, 1);
 #endif
 }
 
-int atomicDecrement (volatile int &value)
+int atomicDecrement(volatile int &value)
 {
 #ifdef _MSC_VER
-    return InterlockedDecrement((volatile LONG *) &value);
+    return InterlockedDecrement((volatile LONG *)&value);
 #else
     return interlocked_add(&value, -1);
 #endif
@@ -505,14 +499,14 @@ int atomicDecrement (volatile int &value)
 // Mutex
 //
 ////////////////////////////////////////////////////////////////////////////////
-Mutex::Mutex() 
+Mutex::Mutex()
 {
 #ifndef _MSC_VER
-    m_mutex_internal = (void*)(new pthread_mutex_t);
+    m_mutex_internal = (void *)(new pthread_mutex_t);
     pthread_mutexattr_t attr;
     pthread_mutexattr_init(&attr);
     pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init((pthread_mutex_t*)m_mutex_internal, &attr);
+    pthread_mutex_init((pthread_mutex_t *)m_mutex_internal, &attr);
 #else
     CRITICAL_SECTION *cs = new CRITICAL_SECTION;
     InitializeCriticalSection(cs);
@@ -523,31 +517,31 @@ Mutex::Mutex()
 Mutex::~Mutex() throw()
 {
 #ifndef _MSC_VER
-    pthread_mutex_destroy((pthread_mutex_t*)m_mutex_internal);
-    delete ((pthread_mutex_t*)m_mutex_internal);
+    pthread_mutex_destroy((pthread_mutex_t *)m_mutex_internal);
+    delete ((pthread_mutex_t *)m_mutex_internal);
 #else
-    CRITICAL_SECTION *cs = (CRITICAL_SECTION *) m_mutex_internal; 
+    CRITICAL_SECTION *cs = (CRITICAL_SECTION *)m_mutex_internal;
     DeleteCriticalSection(cs);
     delete cs;
-#endif    
+#endif
 }
 
-void Mutex::lock() 
+void Mutex::lock()
 {
 #ifndef _MSC_VER
-    pthread_mutex_lock( (pthread_mutex_t*)m_mutex_internal );
+    pthread_mutex_lock((pthread_mutex_t *)m_mutex_internal);
 #else
-    EnterCriticalSection((CRITICAL_SECTION*) m_mutex_internal);
-#endif    
+    EnterCriticalSection((CRITICAL_SECTION *)m_mutex_internal);
+#endif
 }
 
-void Mutex::unlock() 
+void Mutex::unlock()
 {
 #ifndef _MSC_VER
-    pthread_mutex_unlock( (pthread_mutex_t*)m_mutex_internal );
+    pthread_mutex_unlock((pthread_mutex_t *)m_mutex_internal);
 #else
-    LeaveCriticalSection((CRITICAL_SECTION*) m_mutex_internal);
-#endif    
+    LeaveCriticalSection((CRITICAL_SECTION *)m_mutex_internal);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -555,11 +549,11 @@ void Mutex::unlock()
 // ThreadLocalDataInstanceIds
 //
 ////////////////////////////////////////////////////////////////////////////////
-ThreadLocalDataInstances::ThreadLocalDataInstances () : m_firstFreeId(-1)
+ThreadLocalDataInstances::ThreadLocalDataInstances() : m_firstFreeId(-1)
 {
 }
 
-int ThreadLocalDataInstances::allocId (ThreadLocalInstanceAllocator *alloc)
+int ThreadLocalDataInstances::allocId(ThreadLocalInstanceAllocator *alloc)
 {
     ScopedLock lock(m_mutex);
     if (m_firstFreeId >= 0)
@@ -574,9 +568,9 @@ int ThreadLocalDataInstances::allocId (ThreadLocalInstanceAllocator *alloc)
     return m_ids.size() - 1;
 }
 
-void ThreadLocalDataInstances::freeId (int id)
+void ThreadLocalDataInstances::freeId(int id)
 {
-    assert((unsigned) id < m_ids.size());
+    assert((unsigned)id < m_ids.size());
     assert(m_allocators[id]);
     ScopedLock lock(m_mutex);
     m_ids[id] = m_firstFreeId;
@@ -590,7 +584,7 @@ void ThreadLocalDataInstances::freeId (int id)
 // IThreadLocalDataType
 //
 ////////////////////////////////////////////////////////////////////////////////
-IThreadLocalDataType::IThreadLocalDataType () : next(NULL)
+IThreadLocalDataType::IThreadLocalDataType() : next(NULL)
 {
     *g_threadLocalDataTypesTail = this;
     g_threadLocalDataTypesTail = &next;
@@ -601,7 +595,7 @@ IThreadLocalDataType::IThreadLocalDataType () : next(NULL)
 // numProcessors()
 //
 ////////////////////////////////////////////////////////////////////////////////
-int numProcessors ()
+int numProcessors()
 {
 #ifndef _MSC_VER
     return sysconf(_SC_NPROCESSORS_ONLN);

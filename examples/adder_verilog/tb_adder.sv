@@ -45,8 +45,8 @@ CAdder adder(clk, a, b, sum);
 always_ff @(posedge clk) begin
     $display("sum = %x  expected = %x", sum, expected);
     expected <= a + b;
-    a <= $random;
-    b <= $random;
+    a <= 16'($random);
+    b <= 16'($random);
 end
 
 initial #20000 $finish;

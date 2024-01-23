@@ -58,7 +58,7 @@ class Component;
 class Archive;
 
 #ifdef _VERILOG
-#include <vcs_vpi_user.h>
+#include <vpi_user.h>
 #else
 typedef int32 *vpiHandle;
 #endif
@@ -103,7 +103,7 @@ public:
 // ClockDomain
 //
 ////////////////////////////////////////////////////////////////////////////////
-class ClockDomain 
+class ClockDomain
 {
     DECLARE_NOCOPY(ClockDomain);
 
@@ -181,7 +181,7 @@ public:
     void registerTickableComponent (Component *c);
 
     // Add an update wrapper to this list
-    void registerUpdateFunction (UpdateWrapper *update); 
+    void registerUpdateFunction (UpdateWrapper *update);
 
     // Sort the update functions and create the update tree
     void sortUpdateFunctions ();
@@ -197,14 +197,14 @@ public:
     void addWavesFifo (Cascade::WavesFifo *f);
     static void addGlobalWavesSignal (Cascade::WavesSignal *s);
 
-    // Find the clock domain that contains this non-fifo data in its port array, 
+    // Find the clock domain that contains this non-fifo data in its port array,
     // or return NULL if there is no domain that contains the data.
     static ClockDomain *findOwner (const byte *data);
 
     // Register a verilog clock port with this clock domain
     void registerVerilogClock (vpiHandle port);
 
-    // Helper function to determine if this clock domain is compatible with 
+    // Helper function to determine if this clock domain is compatible with
     // another clock domain (i.e. combinational connections are allowed).
     // Two clock domains are compatible if they can never have simultaneous
     // rising clock edges.
@@ -219,7 +219,7 @@ public:
     void manualTick ();
 
     // Combinational update
-    void update (); 
+    void update ();
     void evalTrigger (S_Trigger *trigger);
 
     // Rising clock edge
@@ -232,9 +232,9 @@ public:
     void schedulePop (GenericFifo *fifo);
 
     // Get the clock period
-    inline int getPeriod () const 
-    { 
-        return m_period; 
+    inline int getPeriod () const
+    {
+        return m_period;
     }
 
     // Update the nextTick time
@@ -246,11 +246,11 @@ public:
     {
         return m_nextEdge;
     }
-        
+
     // Re-insert the clock domain into the global linked list
     void scheduleClockDomain ();
 
-    // Run the simulation until a specified time in picoseconds, 
+    // Run the simulation until a specified time in picoseconds,
     // or for a single tick() event if runUntil is zero.
     static void runSimulation (uint64 runUntil);
 
@@ -293,9 +293,9 @@ private:
     int    m_prevIndex; // Logical index of most recent rising clock edge
 
     // Store clock domain in a linked list of linked lists.  For automatically ticked
-    // clock domains, the top-level linked list has distinct nextTick times and is in 
-    // increasing order of these times; each domain in this top-level list is the head 
-    // of a secondary list of domains with the same nextTick time.  For manually ticked 
+    // clock domains, the top-level linked list has distinct nextTick times and is in
+    // increasing order of these times; each domain in this top-level list is the head
+    // of a secondary list of domains with the same nextTick time.  For manually ticked
     // clock domains, the top-level linked list has separate driver domains in no
     // particular order, then domains which divide a driver domain are in that domain's
     // sameTick list (again, in no particular order).
@@ -313,7 +313,7 @@ private:
     // Update array
     byte                 *m_updates;        // Sorted list of update functions
     int                   m_updateSize;     // Size in bytes of update data
-    std::set<S_Trigger *, descore::allow_ptr<S_Trigger *> > 
+    std::set<S_Trigger *, descore::allow_ptr<S_Trigger *> >
                           m_stickyTriggers; // Triggers that need to be checked on every cycle
 
     // Events scheduled for a future rising clock edge
@@ -341,16 +341,16 @@ private:
     bool           m_resolvedPeriod; // Flag indicating that we've resolved ratio/offset/period
     PortList       m_portWrappers;   // Ports assigned to this clock domain
 
-    // If this clock domain has a generator and the clock ratio is rational (a/b), then 
+    // If this clock domain has a generator and the clock ratio is rational (a/b), then
     // synchronize every b'th rising edge of this domain with every a'th rising edge of the
     // generator domain according to a fixed offset.  Specifically, pick integers m and k
     // such that the bn'th logical rising clock edge of this domain is offset by k from the
     // (an+m)'th logical rising clock edge of the generator domain, where "logical rising
     // clock edge" includes clock edges before time 0 (for domains with a negative offset)
-    // that don't actually get simulated.  
+    // that don't actually get simulated.
     ClockDomain *m_generator;
-    int m_gen_a;   
-    int m_gen_b;   
+    int m_gen_a;
+    int m_gen_b;
     int m_gen_m;
     int m_gen_k;
 

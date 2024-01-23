@@ -160,7 +160,7 @@ struct type_traits
 {
     static const bool is_pointer = descore::is_pointer<T>::val;
 
-    static const bool is_bag_of_bits = (__has_trivial_copy(T) && __has_trivial_assign(T) && __has_trivial_destructor(T)) || 
+    static const bool is_bag_of_bits = (__is_trivially_copyable(T) && __is_trivially_assignable(T, const T&) && __is_trivially_destructible(T)) ||
                                        (!__is_class(T) && !__is_union(T));
 
     static const bool is_const = descore::is_const<T>::val;

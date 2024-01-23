@@ -137,7 +137,7 @@ static void initThreads ()
     }
     else if (numProcessors < params.NumThreads)
     {
-        log("cascade.NumThreads is set to %d but only %d processors have been detected.\n", 
+        log("cascade.NumThreads is set to %d but only %d processors have been detected.\n",
             *params.NumThreads, numProcessors);
         log("Running with %d threads\n", numProcessors);
         g_numThreads = numProcessors - 1;
@@ -161,7 +161,7 @@ static void cleanupThreads ()
     g_threads = NULL;
 }
 
-// These should really be static, but MSVC then requires the static keyword in the 
+// These should really be static, but MSVC then requires the static keyword in the
 // ClockDomain friend declaration, whereas gcc prohibits it.  So, just make the
 // functions non-static; they're in the Cascade namespace anyways.
 void forallThreaded (int id)
@@ -327,7 +327,7 @@ ClockDomain::ClockDomain ()
 void ClockDomain::initialize (bool manual)
 {
     m_id = s_numClockDomains++;
-    m_period = 0; 
+    m_period = 0;
     m_numTicks = 0;
     m_numEdges = 0;
     m_nextDifferentTick = NULL;
@@ -412,7 +412,7 @@ bool ClockDomain::compatible (const ClockDomain *d) const
     while (offset > gcd / 2)
         offset -= gcd;
 
-    // If the offset is within than clock rounding, then the domains may have 
+    // If the offset is within than clock rounding, then the domains may have
     // a simultaneous rising clock edge
     return abs(offset) > (int) params.ClockRounding;
 }
@@ -436,7 +436,7 @@ ClockDomain *ClockDomain::getDefaultClockDomain ()
 ////////////////////////////////////////////////////////////////////////////////
 void ClockDomain::preTick ()
 {
-    if (m_numEdges & 1) 
+    if (m_numEdges & 1)
         m_ports.preTick();
 }
 
@@ -518,12 +518,12 @@ void ClockDomain::postTick ()
         triggers.clear();
     }
 
-    // Call tick() for all wave fifos (captures state following scheduled fifo events to 
+    // Call tick() for all wave fifos (captures state following scheduled fifo events to
     // correctly dump fifos with delay).
     for (WavesFifo *f = m_waveFifos ; f ; f = f->next)
         f->tick();
 
-    // Dump RegQ waves (need to do this before update() so that fake registers get 
+    // Dump RegQ waves (need to do this before update() so that fake registers get
     // dumped correctly).
     dumpRegQs();
 
@@ -625,7 +625,7 @@ void ClockDomain::initialize ()
     doAcross(&PortStorage::finalizeCopies);
 
     // Once the ports have been initialized we can create the update array
-    // (we need to initialize the ports first in order to set the 
+    // (we need to initialize the ports first in order to set the
     // value pointers which are needed for trigger evaluation).
     logInfo("Writing update array...\n");
     doAcross(&ClockDomain::createUpdateArray);
@@ -713,9 +713,9 @@ static void resetPendingFifos (stack<GenericFifo *> &fifos)
     // Drop pending fifo events for any fifos that have been reset.
     for (int i = 0 ; i < fifos.size() ; i++)
     {
-        if (fifos[i]->head == 0 && 
-            fifos[i]->tail == 0 && 
-            fifos[i]->fullCount == 0 && 
+        if (fifos[i]->head == 0 &&
+            fifos[i]->tail == 0 &&
+            fifos[i]->fullCount == 0 &&
             fifos[i]->freeCount == (fifos[i]->size / fifos[i]->dataSize))
         {
             GenericFifo *f = fifos.pop();
@@ -794,7 +794,7 @@ void ClockDomain::resetTriggersInternal ()
 {
     // Synchronous triggers are normally placed on a pending-activation list
     // following component updates, but at initialization time the values can
-    // be written directly instead of written by a component, so we need to 
+    // be written directly instead of written by a component, so we need to
     // explicitly check for initially active synchronous triggers.  Specifically,
     // suppose there is a synchronous connection from A to B.  Then on the first
     // clock cycle, the input port on B will see the reset value from A.  If the
@@ -1008,7 +1008,7 @@ void ClockDomain::createUpdateArray ()
     m_updates = new byte[m_updateSize];
     writeUpdates(firstUpdate);
 
-    // Add a sentinel to the end of the sticky triggers to simplify the 
+    // Add a sentinel to the end of the sticky triggers to simplify the
     // loop that iterates over sticky triggers up to a certain point.
     m_stickyTriggers.insert((S_Trigger *) (m_updates + m_updateSize));
 }
@@ -1051,8 +1051,8 @@ int ClockDomain::writeTriggers (UpdateWrapper *w, byte *&dst)
         bool singleWriter = (port->writers.size() == 1);
 
         // For regular update functions, resolve the source across a single synchronous connection
-        // and set the delay.  For the sentinel (component == NULL), don't resolve the source because 
-        // the triggers will be evaluated on every clock cycle.  
+        // and set the delay.  For the sentinel (component == NULL), don't resolve the source because
+        // the triggers will be evaluated on every clock cycle.
         int delay = 0;
         if (w->component && (port->connection == PORT_SYNCHRONOUS))
         {
@@ -1173,7 +1173,7 @@ void ClockDomain::driveVerilogClocks ()
         s_vpi_value value;
         value.format = vpiVectorVal;
         s_vpi_vecval vecval = { m_numEdges & 1, 0 };
-        value.value.vector = &vecval;    
+        value.value.vector = &vecval;
         vpi_put_value(m_verilogClocks[i], &value, NULL, vpiForceFlag);
     }
 #endif
@@ -1286,7 +1286,7 @@ void ClockDomain::scheduleClockDomain ()
     {
         // Insert into the top-level linked list; sort by time
         ClockDomain **ppDomain = &s_first;
-        for ( ; *ppDomain && ((*ppDomain)->m_nextEdge + params.ClockRounding < m_nextEdge) ; 
+        for ( ; *ppDomain && ((*ppDomain)->m_nextEdge + params.ClockRounding < m_nextEdge) ;
             ppDomain = &((*ppDomain)->m_nextDifferentTick));
 
         // If there is an existing second-level linked list with the appropriate next Tick time
@@ -1312,7 +1312,7 @@ void ClockDomain::scheduleClockDomain ()
         // If this clock domain is dividing the clock of a manually-scheduled domain,
         // then add it to the nextSameTick list of that domain.
         CascadeValidate(m_dividedClock, "Clock domain has no period and no generator");
-        CascadeValidate(Sim::state == Sim::SimInitializing, 
+        CascadeValidate(Sim::state == Sim::SimInitializing,
             "scheduleClockDomain() should only be called during initialization for divider of manual clock");
         ClockDomain *generator = m_dividedClock->resolveClockDomain();
         while (generator->m_dividedClock)
@@ -1440,8 +1440,8 @@ void ClockDomain::archive (Archive &ar)
     }
 
     // A WavesFifo needs to know how many in-flight pushes there are, so the consumer
-    // side of a fifo with delay can set its tail pointer properly.  So if we're loading 
-    // then temporarily record the number of in-flight pushes in fullCount, then copy 
+    // side of a fifo with delay can set its tail pointer properly.  So if we're loading
+    // then temporarily record the number of in-flight pushes in fullCount, then copy
     // this information to the WavesFifos, then archive the actual Fifo data.  The
     // Fifo fullCounts were reset to zero in PortStorage::archive()
     if (ar.isLoading())
@@ -1500,7 +1500,7 @@ void ClockDomain::archive (Archive &ar)
 //
 // runSimulation()
 //
-// Run the simulation until a specified time in picoseconds, 
+// Run the simulation until a specified time in picoseconds,
 // or for a single tick() event if runUntil is zero.
 //
 ////////////////////////////////////////////////////////////////////////
@@ -1668,8 +1668,8 @@ void ClockDomain::manualTick ()
         {
             // Figure out how many domains in a row we're ticking
             ClockDomain **ppc;
-            for (ppc = &nextTick->m_nextSameTick ; 
-                *ppc && (*ppc)->m_clockOffset <= ticks->m_clockOffset + (int) params.ClockRounding ; 
+            for (ppc = &nextTick->m_nextSameTick ;
+                *ppc && (*ppc)->m_clockOffset <= ticks->m_clockOffset + (int) params.ClockRounding ;
                 ppc = &(*ppc)->m_nextSameTick);
             ClockDomain *temp = *ppc;
             *ppc = NULL;
